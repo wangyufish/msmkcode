@@ -19,12 +19,12 @@ def db_connect():
     return conn
 
 def get_table_handler():
-    inputfile = "data/meituan_zgc.xlsx"
+    inputfile = "data/meituan_hangtianqiao.xlsx"
     bk = xlrd.open_workbook(inputfile)
     try:
-        sh = bk.sheet_by_name("Worksheet")
+        sh = bk.sheet_by_name("crawler-data-1499771414497-7331")
     except:
-            print "no sheet in %s named Worksheet" % inputfile
+        print "no sheet in %s named Worksheet" % inputfile
     return sh
 
 if __name__ == "__main__":
@@ -36,9 +36,8 @@ if __name__ == "__main__":
     conn = db_connect()
     conn.set_character_set('utf8')
     cur = conn.cursor()
-    menu_id = 121
     for x in range(1, nrows):
-        id = x + 24
+        id = x + 8150
         relation = 0
         country = "中国"
         province = "北京"
@@ -71,51 +70,22 @@ if __name__ == "__main__":
         	menu_json_sql = sh.cell_value(x, 15)
         else:
         	menu_json_sql = ""
+        if sh.cell(x, 16).ctype != 0:
+        	business_id = sh.cell_value(x, 16)
+        else:
+        	business_id = ""
         sql = "insert into restaurant(id, relation, country, province, city, street, name, telephone, imgurl, \
         state, latitude, longitude, rate, monthly_order_num, open_time, avg_delivery_duration, starting_price,\
-        deliver_fee, activities, menu_json) values ('%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%f',\
-        '%f', '%d', '%d', '%s', '%d', '%d', '%d', '%s', '%s')" % \
+        deliver_fee, activities, menu_json, business_id) values ('%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%f',\
+        '%f', '%d', '%d', '%s', '%d', '%d', '%d', '%s', '%s', '%s')" % \
         (id, relation, country, province, city, street, name, telephone, imgurl, state, latitude, longitude, \
-         rate, monthly_order_num, open_time, avg_delivery_duration, starting_price, deliver_fee, activities, menu_json_sql)
+         rate, monthly_order_num, open_time, avg_delivery_duration, starting_price, deliver_fee, activities, menu_json_sql, business_id)
         try:
         	cur.execute(sql)
         	conn.commit()
         except:
         	print sql
         	conn.rollback()
-        if sh.cell(x, 15).ctype != 0:
-        	menu_total = sh.cell_value(x, 15)
-        	try:
-        		menu_json = json.loads(menu_total)
-        	except:
-        		print "illegal json"
-        	for item in menu_json:
-        		print item["spus"]
-        		for food in item["spus"]:
-        			restaurantid = id
-        			cuisinesid = -1
-        			cuisinesname = "unknown"
-        			specialoffer = -1
-        			special = -1
-        			name = food["food_name"]
-        			price = food["food_price"]
-        			imgurl = food["food_image"]
-        			state = -1
-        			food_id = int(food["food_id"])
-        			food_score = -1
-        			food_recommend_rate = -1
-        			food_monthly_sold_count = int(food["food_monthly_sold_count"])
-        			food_recommend_count = int(food["food_agree_count"])
-        			sql_menu = "insert into menu(id, restaurantid, cuisinesid, cuisinesname, specialoffer, special, name, price, imgurl, \
-            		state, food_id, food_score, food_recommend_rate, food_monthly_sold_count, food_recommend_count)\
-            		values ('%d', '%d', '%d', '%s', '%d', '%d', '%s', '%s', '%s', '%d', '%d', '%f',\
-            		'%s', '%d', '%d')" % \
-            		(menu_id, restaurantid, cuisinesid, cuisinesname, specialoffer, special, name, price, imgurl, state, food_id, food_score, \
-           			food_recommend_rate, food_monthly_sold_count, food_recommend_count)
-           			print sql_menu
-           			cur.execute(sql_menu)
-           			conn.commit()
-           			menu_id += 1
 
     cur.close()
     conn.close()

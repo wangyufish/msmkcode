@@ -19,12 +19,12 @@ def db_connect():
     return conn
 
 def get_table_handler():
-    inputfile = "data/meituan_zgc.xlsx"
+    inputfile = "data/meituan_xizhimen.xlsx"
     bk = xlrd.open_workbook(inputfile)
     try:
-        sh = bk.sheet_by_name("Worksheet")
+        sh = bk.sheet_by_name("crawler-data-1499695592338-7331")
     except:
-            print "no sheet in %s named Worksheet" % inputfile
+        print "no sheet in %s named Worksheet" % inputfile
     return sh
 
 if __name__ == "__main__":
@@ -36,9 +36,9 @@ if __name__ == "__main__":
     conn = db_connect()
     conn.set_character_set('utf8')
     cur = conn.cursor()
-    menu_id = 121
+    #menu_id = 13233
     for x in range(1, nrows):
-        id = x + 24
+        id = x + 322
         relation = 0
         country = "中国"
         province = "北京"
@@ -77,13 +77,14 @@ if __name__ == "__main__":
         '%f', '%d', '%d', '%s', '%d', '%d', '%d', '%s', '%s')" % \
         (id, relation, country, province, city, street, name, telephone, imgurl, state, latitude, longitude, \
          rate, monthly_order_num, open_time, avg_delivery_duration, starting_price, deliver_fee, activities, menu_json_sql)
+        #print menu_json_sql
         try:
         	cur.execute(sql)
         	conn.commit()
         except:
         	print sql
         	conn.rollback()
-        if sh.cell(x, 15).ctype != 0:
+        '''if sh.cell(x, 15).ctype != 0:
         	menu_total = sh.cell_value(x, 15)
         	try:
         		menu_json = json.loads(menu_total)
@@ -97,7 +98,7 @@ if __name__ == "__main__":
         			cuisinesname = "unknown"
         			specialoffer = -1
         			special = -1
-        			name = food["food_name"]
+        			name = food["food_name"].replace("'", "")
         			price = food["food_price"]
         			imgurl = food["food_image"]
         			state = -1
@@ -115,7 +116,7 @@ if __name__ == "__main__":
            			print sql_menu
            			cur.execute(sql_menu)
            			conn.commit()
-           			menu_id += 1
+           			menu_id += 1'''
 
     cur.close()
     conn.close()
